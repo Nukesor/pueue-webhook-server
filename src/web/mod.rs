@@ -1,9 +1,7 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
-use std::str;
 
-use actix::prelude::*;
 use actix_web::*;
 use anyhow::{anyhow, Result};
 use config::ConfigError;
@@ -15,13 +13,11 @@ mod authentication;
 mod helper;
 mod routes;
 
-use crate::scheduler::Scheduler;
 use crate::settings::Settings;
 use routes::*;
 
 /// State of the actix-web application
 pub struct AppState {
-    scheduler: Addr<Scheduler>,
     settings: Settings,
 }
 
@@ -33,16 +29,15 @@ pub struct Payload {
 /// Initialize the web server
 /// Move the address of the queue actor inside the AppState for further dispatch
 /// of tasks to the actor
-pub fn init_web_server(scheduler: Addr<Scheduler>, settings: Settings) -> Result<()> {
+pub async fn run_web_server(settings: Settings) -> Result<()> {
     let settings_for_app = settings.clone();
     let server = HttpServer::new(move || {
         App::new()
             .data(AppState {
-                scheduler: scheduler.clone(),
                 settings: settings_for_app.clone(),
             })
             .service(web::resource("/{webhook_name}").to(webhook))
-            .service(web::resource("/").to(index))
+        //.service(web::resource("/").to(index))
     });
 
     let address = format!("{}:{}", settings.domain, settings.port);
@@ -67,9 +62,9 @@ pub fn init_web_server(scheduler: Addr<Scheduler>, settings: Settings) -> Result
         let mut config = ServerConfig::new(NoClientAuth::new());
         config.set_single_cert(cert_chain, keys.remove(0))?;
 
-        server.bind_rustls(address, config)?.run();
+        server.bind_rustls(address, config)?.run().await?;
     } else {
-        server.bind(address)?.run();
+        server.bind(address)?.run().await?;
     }
 
     Ok(())

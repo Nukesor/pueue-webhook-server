@@ -1,32 +1,31 @@
 use actix_web::http::Method;
+use actix_web::HttpResponse;
 use actix_web::*;
-use actix_web::{http, HttpResponse};
 use log::{debug, info};
+use pueue::message::Message;
+use pueue::protocol::send_message;
 
-use crate::messages::GetQueue;
+use crate::pueue::get_pueue_socket;
 use crate::web::authentication::verify_authentication_header;
 use crate::web::helper::*;
 use crate::web::{AppState, Payload};
 
 /// Index route for getting current state of the server
-pub async fn index(
-    data: web::Data<AppState>,
-    request: web::HttpRequest,
-) -> Result<HttpResponse, HttpResponse> {
-    let headers = get_headers_hash_map(request.headers())?;
-
-    // Check the credentials and signature headers of the request
-    verify_authentication_header(&data.settings, &headers, &Vec::new())?;
-
-    let json = data
-        .scheduler
-        .send(GetQueue {})
-        .await
-        .or(Err(HttpResponse::InternalServerError()))?;
-    Ok(HttpResponse::Ok()
-        .header(http::header::CONTENT_TYPE, "application/json")
-        .body(json))
-}
+//pub async fn index(
+//    data: web::Data<AppState>,
+//    request: web::HttpRequest,
+//) -> Result<HttpResponse, HttpResponse> {
+//    let headers = get_headers_hash_map(request.headers())?;
+//
+//    // Check the credentials and signature headers of the request
+//    verify_authentication_header(&data.settings, &headers, &Vec::new())?;
+//
+//    let socket = get_pueue_socket(&data.settings);
+//
+//    Ok(HttpResponse::Ok()
+//        .header(http::header::CONTENT_TYPE, "application/json")
+//        .body(json))
+//}
 
 /// Index route
 pub async fn webhook(
@@ -58,8 +57,18 @@ pub async fn webhook(
     // Create a new task with the checked parameters and webhook name
     let new_task = get_task_from_request(&data.settings, webhook_name, payload.parameters)?;
 
-    // Send the task to the actor managing the queue
-    data.scheduler.do_send(new_task);
+    let mut socket = match get_pueue_socket(&data.settings).await {
+        Ok(socket) => socket,
+        Err(err) => {
+            return Ok(HttpResponse::InternalServerError()
+                .body(format!("Pueue daemon cannot be reached: {:?}", err)))
+        }
+    };
+
+    if let Err(err) = send_message(Message::Add(new_task), &mut socket).await {
+        return Ok(HttpResponse::InternalServerError()
+            .body(format!("Failed to send message to Pueue daemon: {:?}", err)));
+    };
 
     Ok(HttpResponse::Ok().finish())
 }

@@ -2,11 +2,10 @@ use std::collections::HashMap;
 
 use actix_web::http::header::HeaderMap;
 use actix_web::HttpResponse;
-use chrono::prelude::*;
 use handlebars::Handlebars;
 use log::{info, warn};
+use pueue::message::AddMessage;
 
-use crate::messages::NewTask;
 use crate::settings::Settings;
 use crate::web::Payload;
 
@@ -80,17 +79,21 @@ pub fn get_task_from_request(
     settings: &Settings,
     name: String,
     parameters: Option<HashMap<String, String>>,
-) -> Result<NewTask, HttpResponse> {
+) -> Result<AddMessage, HttpResponse> {
     let parameters = parameters.unwrap_or_default();
 
     let webhook = settings.get_webhook_by_name(&name)?;
     let command = verify_template_parameters(webhook.command, &parameters)?;
 
-    Ok(NewTask {
-        webhook_name: webhook.name,
-        parameters,
-        cwd: webhook.cwd,
+    Ok(AddMessage {
         command,
-        added_at: Local::now(),
+        path: webhook.cwd,
+        envs: HashMap::new(),
+        group: Some("webhook".to_string()),
+        enqueue_at: None,
+        dependencies: Vec::new(),
+        ignore_aliases: false,
+        start_immediately: false,
+        stashed: false,
     })
 }
