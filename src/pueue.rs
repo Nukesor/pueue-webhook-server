@@ -30,7 +30,7 @@ pub async fn get_pueue_socket(settings: &Settings) -> Result<Socket> {
         bail!("Daemon went away after initial connection. Did you use the correct secret?")
     }
 
-    let state = get_state(&mut socket).await?;
+    let _state = get_state(&mut socket).await?;
 
     Ok(socket)
 }

@@ -36,8 +36,8 @@ pub async fn webhook(
 ) -> Result<HttpResponse, HttpResponse> {
     let body: Vec<u8> = body.to_vec();
     let payload: Payload;
-    match request.method() {
-        &Method::POST => {
+    match *request.method() {
+        Method::POST => {
             payload = get_payload(&body)?;
         }
         _ => {

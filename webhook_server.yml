@@ -1,12 +1,14 @@
 domain: 127.0.0.1
 port: 8000
+secret: '72558847d57c22a2f19d711537cdc446'
 ssl_private_key: null
 ssl_cert_chain: null
-workers: 6
-secret: '72558847d57c22a2f19d711537cdc446'
 basic_auth_user: "test"
 basic_auth_password: "testtest"
 basic_auth_and_secret: false
+pueue_port: null
+pueue_unix_socket: /home/nuke/.local/share/pueue/pueue_nuke.socket
+pueue_directory: /home/nuke/.local/share/pueue
 webhooks:
   -
     name: 'ls'

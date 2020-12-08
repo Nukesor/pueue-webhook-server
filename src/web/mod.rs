@@ -47,17 +47,17 @@ pub async fn run_web_server(settings: Settings) -> Result<()> {
         let chain_path = settings
             .ssl_cert_chain
             .as_ref()
-            .ok_or(ConfigError::NotFound("ssl_cert_chain".to_string()))?;
+            .ok_or_else(|| ConfigError::NotFound("ssl_cert_chain".to_string()))?;
         let key_path = settings
             .ssl_private_key
             .as_ref()
-            .ok_or(ConfigError::NotFound("ssl_private_key".to_string()))?;
+            .ok_or_else(|| ConfigError::NotFound("ssl_private_key".to_string()))?;
         let cert_file = &mut BufReader::new(File::open(chain_path)?);
         let key_file = &mut BufReader::new(File::open(key_path)?);
 
-        let cert_chain = certs(cert_file).or(Err(anyhow!("Failed to read ssl certs")))?;
+        let cert_chain = certs(cert_file).map_err(|_| anyhow!("Failed to read ssl certs"))?;
         let mut keys =
-            rsa_private_keys(key_file).or(Err(anyhow!("Failed to read ssl private key")))?;
+            rsa_private_keys(key_file).map_err(|_| anyhow!("Failed to read ssl private key"))?;
 
         let mut config = ServerConfig::new(NoClientAuth::new());
         config.set_single_cert(cert_chain, keys.remove(0))?;

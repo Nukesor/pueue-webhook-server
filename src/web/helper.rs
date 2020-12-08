@@ -10,7 +10,7 @@ use crate::settings::Settings;
 use crate::web::Payload;
 
 /// We do our own json handling, since Actix doesn't allow multiple extractors at once
-pub fn get_payload(body: &Vec<u8>) -> Result<Payload, HttpResponse> {
+pub fn get_payload(body: &[u8]) -> Result<Payload, HttpResponse> {
     match serde_json::from_slice(body) {
         Ok(payload) => Ok(payload),
         Err(error) => {
@@ -48,7 +48,7 @@ pub fn verify_template_parameters(
     template: String,
     parameters: &HashMap<String, String>,
 ) -> Result<String, HttpResponse> {
-    if parameters.len() != 0 {
+    if !parameters.is_empty() {
         info!("Got parameters: {:?}", parameters);
     }
     // Create a new handlebar instance and enable strict mode to prevent missing or malformed arguments
@@ -66,7 +66,7 @@ pub fn verify_template_parameters(
             Err(HttpResponse::BadRequest().json(format!("{:?}", error)))
         }
         Ok(result) => {
-            if parameters.len() != 0 {
+            if !parameters.is_empty() {
                 info!("Template renders properly: {}", result);
             }
             Ok(result)

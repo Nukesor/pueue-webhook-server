@@ -61,11 +61,11 @@ impl Settings {
             settings
                 .basic_auth_user
                 .as_ref()
-                .ok_or(ConfigError::NotFound("basic_auth_user".to_string()))?;
+                .ok_or_else(|| ConfigError::NotFound("basic_auth_user".to_string()))?;
             settings
                 .basic_auth_password
                 .as_ref()
-                .ok_or(ConfigError::NotFound("basic_auth_password".to_string()))?;
+                .ok_or_else(|| ConfigError::NotFound("basic_auth_password".to_string()))?;
         }
 
         // Verify that everything is in place, if `basic_auth_and_secret` is activated
@@ -73,24 +73,24 @@ impl Settings {
             settings
                 .secret
                 .as_ref()
-                .ok_or(ConfigError::NotFound("secret".to_string()))?;
+                .ok_or_else(|| ConfigError::NotFound("secret".to_string()))?;
             settings
                 .basic_auth_user
                 .as_ref()
-                .ok_or(ConfigError::NotFound("basic_auth_user".to_string()))?;
+                .ok_or_else(|| ConfigError::NotFound("basic_auth_user".to_string()))?;
             settings
                 .basic_auth_password
                 .as_ref()
-                .ok_or(ConfigError::NotFound("basic_auth_password".to_string()))?;
+                .ok_or_else(|| ConfigError::NotFound("basic_auth_password".to_string()))?;
         }
 
         Ok(settings)
     }
 
     /// Get settings for a specific webhook
-    pub fn get_webhook_by_name(&self, name: &String) -> Result<Webhook, HttpResponse> {
+    pub fn get_webhook_by_name(&self, name: &str) -> Result<Webhook, HttpResponse> {
         for webhook in self.webhooks.iter() {
-            if &webhook.name == name {
+            if webhook.name == name {
                 return Ok(webhook.clone());
             }
         }
@@ -120,7 +120,7 @@ fn parse_config(mut settings: Config) -> Result<Config> {
 #[cfg(target_os = "linux")]
 fn get_config_paths() -> Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
-    let home_dir = dirs::home_dir().ok_or(anyhow!("Couldn't resolve home dir"))?;
+    let home_dir = dirs::home_dir().ok_or_else(|| anyhow!("Couldn't resolve home dir"))?;
     paths.push(Path::new("/etc/webhook_server.yml").to_path_buf());
     paths.push(home_dir.join(".config/webhook_server.yml"));
     paths.push(Path::new("./webhook_server.yml").to_path_buf());
@@ -132,7 +132,7 @@ fn get_config_paths() -> Result<Vec<PathBuf>> {
 fn get_config_paths() -> Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
 
-    let home_dir = dirs::home_dir().ok_or(anyhow!("Couldn't resolve home dir"))?;
+    let home_dir = dirs::home_dir().ok_or_else(|| anyhow!("Couldn't resolve home dir"))?;
     paths.push(home_dir.join("AppData\\Roaming\\webhook_server\\webhook_server.yml"));
     paths.push(Path::new(".\\webhook_server.yml").to_path_buf());
 
@@ -143,7 +143,7 @@ fn get_config_paths() -> Result<Vec<PathBuf>> {
 fn get_config_paths() -> Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
 
-    let home_dir = dirs::home_dir().ok_or(anyhow!("Couldn't resolve home dir"))?;
+    let home_dir = dirs::home_dir().ok_or_else(|| anyhow!("Couldn't resolve home dir"))?;
     paths.push(home_dir.join("Library/Application Support/webhook_server.yml"));
     paths.push(home_dir.join("Library/Preferences/webhook_server.yml"));
     paths.push(Path::new("./webhook_server.yml").to_path_buf());

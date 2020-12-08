@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 
 use actix_web::{http, HttpResponse};
-use base64;
-use hex;
 use hmac::{Hmac, Mac, NewMac};
 use log::warn;
 use sha1::Sha1;
@@ -14,7 +12,7 @@ type HmacSha1 = Hmac<Sha1>;
 pub fn verify_authentication_header(
     settings: &Settings,
     headers: &HashMap<String, String>,
-    body: &Vec<u8>,
+    body: &[u8],
 ) -> Result<(), HttpResponse> {
     // Extract the existing secret from the settings
     let secret = settings.secret.clone().unwrap_or_default();
@@ -89,7 +87,7 @@ fn get_signature_header(headers: &HashMap<String, String>) -> Result<String, Htt
 fn verify_signature_header(
     signature: String,
     secret: String,
-    body: &Vec<u8>,
+    body: &[u8],
 ) -> Result<(), HttpResponse> {
     // Try to decode the sha1 into bytes. Should be a valid hex string
     let signature_bytes = match hex::decode(&signature) {
@@ -118,7 +116,7 @@ fn verify_signature_header(
 }
 
 /// Create a hmac SHA1 instance from a secret and body
-fn generate_signature_sha1(secret_bytes: &Vec<u8>, body: &Vec<u8>) -> HmacSha1 {
+fn generate_signature_sha1(secret_bytes: &[u8], body: &[u8]) -> HmacSha1 {
     let mut hmac =
         HmacSha1::new_varkey(secret_bytes).expect("Couldn't create hmac with current secret");
     hmac.update(body);
@@ -211,7 +209,9 @@ mod tests {
             basic_auth_user: None,
             basic_auth_password: None,
             basic_auth_and_secret: false,
-            workers: 8,
+            pueue_port: None,
+            pueue_unix_socket: None,
+            pueue_directory: String::new(),
             webhooks: Vec::new(),
         };
 
