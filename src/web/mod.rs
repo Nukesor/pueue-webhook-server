@@ -38,7 +38,8 @@ pub async fn run_web_server(settings: Settings) -> Result<()> {
             })
             .service(web::resource("/{webhook_name}").to(webhook))
         //.service(web::resource("/").to(index))
-    });
+    })
+    .workers(2);
 
     let address = format!("{}:{}", settings.domain, settings.port);
 

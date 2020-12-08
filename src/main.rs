@@ -11,7 +11,7 @@ use crate::pueue::get_pueue_socket;
 use crate::settings::Settings;
 use crate::web::run_web_server;
 
-#[async_std::main]
+#[actix_web::main]
 async fn main() -> Result<()> {
     let _ = SimpleLogger::init(LevelFilter::Info, Config::default());
     let settings = Settings::new()?;
