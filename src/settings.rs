@@ -15,7 +15,7 @@ pub struct Webhook {
     pub command: String,
     pub cwd: String,
     #[serde(default = "default_pueue_group")]
-    pub parallel_processes: String,
+    pub pueue_group: String,
 }
 
 fn default_pueue_group() -> String {

@@ -1,5 +1,5 @@
 use anyhow::{bail, Result};
-
+use log::info;
 use pueue::message::*;
 use pueue::platform::socket::get_client;
 use pueue::platform::socket::Socket;
@@ -30,7 +30,22 @@ pub async fn get_pueue_socket(settings: &Settings) -> Result<Socket> {
         bail!("Daemon went away after initial connection. Did you use the correct secret?")
     }
 
-    let _state = get_state(&mut socket).await?;
+    // Every webhook can run in a separate pueue group.
+    let state = get_state(&mut socket).await?;
+    let existing_groups: Vec<String> = state.groups.keys().cloned().collect();
+
+    // Create those groups, if they don't exist yet.
+    for webhook in settings.webhooks.iter() {
+        if !existing_groups.contains(&webhook.pueue_group) {
+            info!("Create new pueue group {}", webhook.pueue_group);
+            let add_group_message = GroupMessage {
+                add: Some(webhook.pueue_group.clone()),
+                remove: None,
+            };
+
+            send_message(Message::Group(add_group_message), &mut socket).await?;
+        }
+    }
 
     Ok(socket)
 }
