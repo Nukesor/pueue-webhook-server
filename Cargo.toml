@@ -28,9 +28,9 @@ config = "0.10"
 dirs = "3"
 anyhow = "1"
 log = "0.4"
-simplelog = "0.8"
+simplelog = "0.9"
 
-pueue = "0.8"
+pueue = "0.10"
 
 serde = "1"
 serde_yaml = "0.8"

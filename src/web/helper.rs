@@ -4,7 +4,7 @@ use actix_web::http::header::HeaderMap;
 use actix_web::HttpResponse;
 use handlebars::Handlebars;
 use log::{info, warn};
-use pueue::message::AddMessage;
+use pueue::network::message::AddMessage;
 
 use crate::settings::Settings;
 use crate::web::Payload;
@@ -89,10 +89,11 @@ pub fn get_task_from_request(
         command,
         path: webhook.cwd,
         envs: HashMap::new(),
-        group: Some("webhook".to_string()),
+        group: "webhook".to_string(),
         enqueue_at: None,
         dependencies: Vec::new(),
-        ignore_aliases: false,
+        label: None,
+        print_task_id: false,
         start_immediately: false,
         stashed: false,
     })
