@@ -2,8 +2,8 @@ use actix_web::http::Method;
 use actix_web::HttpResponse;
 use actix_web::*;
 use log::{debug, info};
-use pueue::network::message::Message;
-use pueue::network::protocol::send_message;
+use pueue_lib::network::message::Message;
+use pueue_lib::network::protocol::send_message;
 
 use crate::pueue::get_pueue_socket;
 use crate::web::authentication::verify_authentication_header;

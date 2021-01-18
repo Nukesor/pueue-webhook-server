@@ -4,7 +4,7 @@ use actix_web::http::header::HeaderMap;
 use actix_web::HttpResponse;
 use handlebars::Handlebars;
 use log::{info, warn};
-use pueue::network::message::AddMessage;
+use pueue_lib::network::message::AddMessage;
 
 use crate::settings::Settings;
 use crate::web::Payload;

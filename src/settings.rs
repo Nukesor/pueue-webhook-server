@@ -6,7 +6,7 @@ use anyhow::{anyhow, Result};
 use config::ConfigError;
 use config::*;
 use log::{info, warn};
-use pueue::platform::directories::default_pueue_path;
+use pueue_lib::platform::directories::default_pueue_path;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
