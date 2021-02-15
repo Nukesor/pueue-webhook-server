@@ -30,7 +30,7 @@ anyhow = "1"
 log = "0.4"
 simplelog = "0.9"
 
-pueue-lib = "0.11"
+pueue-lib = "0.12"
 
 serde = "1"
 serde_yaml = "0.8"
