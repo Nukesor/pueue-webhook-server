@@ -6,7 +6,6 @@ use anyhow::{anyhow, Result};
 use config::ConfigError;
 use config::*;
 use log::{info, warn};
-use pueue_lib::platform::directories::default_pueue_path;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
@@ -20,6 +19,16 @@ pub struct Webhook {
 
 fn default_pueue_group() -> String {
     "webhook".to_string()
+}
+
+pub fn default_pueue_path() -> Result<String> {
+    let path = dirs::home_dir()
+        .ok_or_else(|| anyhow!("Couldn't resolve home dir"))?
+        .join(".local/share/pueue");
+    Ok(path
+        .to_str()
+        .ok_or_else(|| anyhow!("Failed to parse log path (Weird characters?)"))?
+        .to_string())
 }
 
 #[derive(Debug, Deserialize, Clone)]

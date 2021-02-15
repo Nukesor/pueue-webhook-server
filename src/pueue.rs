@@ -1,7 +1,6 @@
 use anyhow::{bail, Result};
 use log::info;
 use pueue_lib::network::message::*;
-use pueue_lib::network::platform::socket::{get_client_stream, GenericStream};
 use pueue_lib::network::protocol::*;
 use pueue_lib::network::secret::read_shared_secret;
 use pueue_lib::settings::Settings as PueueSettings;
