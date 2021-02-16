@@ -2,6 +2,9 @@
 
  [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
+**Warning:**
+This project is mostly unmaintained. I'll still work on bugs, but I won't add new features.
+
 This little helper serves a simple purpose: Execute commands on your server on incoming http requests.
 Initially, it has been designed for continuous integration and supports Github's webhooks out of the box.
 
