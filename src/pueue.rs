@@ -10,7 +10,7 @@ use crate::settings::Settings;
 
 pub async fn get_pueue_socket(settings: &Settings) -> Result<GenericStream> {
     // Try to read settings from the configuration file.
-    let pueue_settings = PueueSettings::new(true, &None)?;
+    let pueue_settings = PueueSettings::read(&None)?;
 
     let mut stream = get_client_stream(&pueue_settings.shared).await?;
 
