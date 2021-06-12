@@ -19,7 +19,7 @@ pub async fn get_pueue_socket(settings: &Settings) -> Result<GenericStream> {
     let secret = read_shared_secret(&pueue_settings.shared.shared_secret_path)?;
     send_bytes(&secret, &mut stream).await?;
     let hello = receive_bytes(&mut stream).await?;
-    if hello != b"hello" {
+    if hello.is_empty() {
         bail!("Daemon went away after initial connection. Did you use the correct secret?")
     }
 
