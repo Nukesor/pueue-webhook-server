@@ -7,8 +7,8 @@ basic_auth_user: "test"
 basic_auth_password: "testtest"
 basic_auth_and_secret: false
 pueue_port: null
-pueue_unix_socket: /home/nuke/.local/share/pueue/pueue_nuke.socket
-pueue_directory: /home/nuke/.local/share/pueue
+pueue_unix_socket: ~/.local/share/pueue/pueue_nuke.socket
+pueue_directory: ~/.local/share/pueue
 webhooks:
   -
     name: 'ls'
@@ -22,4 +22,3 @@ webhooks:
     name: 'sleep'
     command: 'sleep 60'
     cwd: '/home/nuke'
-    mode: 'parallel'
