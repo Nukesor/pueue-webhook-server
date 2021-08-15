@@ -31,12 +31,9 @@ pub async fn get_pueue_socket(settings: &Settings) -> Result<GenericStream> {
     for webhook in settings.webhooks.iter() {
         if !existing_groups.contains(&webhook.pueue_group) {
             info!("Create new pueue group {}", webhook.pueue_group);
-            let add_group_message = GroupMessage {
-                add: Some(webhook.pueue_group.clone()),
-                remove: None,
-            };
 
-            send_message(Message::Group(add_group_message), &mut stream).await?;
+            let message = Message::Group(GroupMessage::Add(webhook.pueue_group.clone()));
+            send_message(message, &mut stream).await?;
         }
     }
 
