@@ -118,7 +118,7 @@ fn verify_signature_header(
 /// Create a hmac SHA1 instance from a secret and body
 fn generate_signature_sha1(secret_bytes: &[u8], body: &[u8]) -> HmacSha1 {
     let mut hmac =
-        HmacSha1::new_varkey(secret_bytes).expect("Couldn't create hmac with current secret");
+        HmacSha1::new_from_slice(secret_bytes).expect("Couldn't create hmac with current secret");
     hmac.update(body);
     hmac
 }
