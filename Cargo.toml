@@ -9,7 +9,7 @@ documentation = "https://docs.rs/webhook-server"
 license = "MIT"
 keywords = ["webhook", "server", "script", "executor", "https"]
 readme = "README.md"
-edition = "2018"
+edition = "2021"
 
 [[bin]]
 name = "webhookserver"
@@ -19,7 +19,7 @@ path = "src/main.rs"
 
 [dependencies]
 rustls = "0.18"
-actix-web = { version = "3", features=["rustls"]}
+actix-web = { version="3", features=["rustls"] }
 handlebars = "4"
 
 config = "0.11"
