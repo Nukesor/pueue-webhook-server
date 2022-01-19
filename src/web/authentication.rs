@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use actix_web::{http, HttpResponse};
-use hmac::{Hmac, Mac, NewMac};
+use hmac::{Hmac, Mac};
 use log::warn;
 use sha1::Sha1;
 
@@ -102,7 +102,7 @@ fn verify_signature_header(
     let secret_bytes = secret.into_bytes();
     let expected_signature = generate_signature_sha1(&secret_bytes, body);
 
-    match expected_signature.clone().verify(&signature_bytes) {
+    match expected_signature.clone().verify_slice(&signature_bytes) {
         Ok(()) => Ok(()),
         Err(_) => {
             warn!(
