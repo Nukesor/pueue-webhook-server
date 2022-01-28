@@ -1,3 +1,4 @@
+use actix_web::error::Error;
 use actix_web::http::Method;
 use actix_web::HttpResponse;
 use actix_web::*;
@@ -33,7 +34,7 @@ pub async fn webhook(
     path_info: web::Path<String>,
     request: web::HttpRequest,
     body: web::Bytes,
-) -> Result<HttpResponse, HttpResponse> {
+) -> Result<HttpResponse, Error> {
     let body: Vec<u8> = body.to_vec();
     let payload: Payload;
     match *request.method() {

@@ -1,7 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use actix_web::http::StatusCode;
-use actix_web::HttpResponse;
+use actix_web::error::{Error, ErrorBadRequest};
 use anyhow::{anyhow, Result};
 use config::ConfigError;
 use config::*;
@@ -97,7 +96,7 @@ impl Settings {
     }
 
     /// Get settings for a specific webhook
-    pub fn get_webhook_by_name(&self, name: &str) -> Result<Webhook, HttpResponse> {
+    pub fn get_webhook_by_name(&self, name: &str) -> Result<Webhook, Error> {
         for webhook in self.webhooks.iter() {
             if webhook.name == name {
                 return Ok(webhook.clone());
@@ -106,7 +105,7 @@ impl Settings {
 
         let error = format!("Couldn't find webhook with name: {}", name);
         warn!("{}", error);
-        Err(HttpResponse::build(StatusCode::BAD_REQUEST).json(error))
+        Err(ErrorBadRequest(error))
     }
 }
 

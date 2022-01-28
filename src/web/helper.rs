@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
+use actix_web::error::{Error, ErrorBadRequest, ErrorUnauthorized};
 use actix_web::http::header::HeaderMap;
-use actix_web::HttpResponse;
 use handlebars::Handlebars;
 use log::{info, warn};
 use pueue_lib::network::message::AddMessage;
@@ -10,19 +10,19 @@ use crate::settings::Settings;
 use crate::web::Payload;
 
 /// We do our own json handling, since Actix doesn't allow multiple extractors at once
-pub fn get_payload(body: &[u8]) -> Result<Payload, HttpResponse> {
+pub fn get_payload(body: &[u8]) -> Result<Payload, Error> {
     match serde_json::from_slice(body) {
         Ok(payload) => Ok(payload),
         Err(error) => {
             let message = format!("Json error: {}", error);
             warn!("{}", message);
-            Err(HttpResponse::Unauthorized().body(message))
+            Err(ErrorUnauthorized(message))
         }
     }
 }
 
 /// Take the HeaderMap and convert them into normal hashmap
-pub fn get_headers_hash_map(map: &HeaderMap) -> Result<HashMap<String, String>, HttpResponse> {
+pub fn get_headers_hash_map(map: &HeaderMap) -> Result<HashMap<String, String>, Error> {
     let mut headers = HashMap::new();
 
     for (key, header_value) in map.iter() {
@@ -33,7 +33,7 @@ pub fn get_headers_hash_map(map: &HeaderMap) -> Result<HashMap<String, String>, 
             Err(error) => {
                 let message = format!("Couldn't parse header: {}", error);
                 warn!("{}", message);
-                return Err(HttpResponse::Unauthorized().body(message));
+                return Err(ErrorUnauthorized(message));
             }
         };
 
@@ -47,7 +47,7 @@ pub fn get_headers_hash_map(map: &HeaderMap) -> Result<HashMap<String, String>, 
 pub fn verify_template_parameters(
     template: String,
     parameters: &HashMap<String, String>,
-) -> Result<String, HttpResponse> {
+) -> Result<String, Error> {
     if !parameters.is_empty() {
         info!("Got parameters: {:?}", parameters);
     }
@@ -63,7 +63,7 @@ pub fn verify_template_parameters(
                 "Error rendering command with params: {:?}. Error: {:?}",
                 parameters, error
             );
-            Err(HttpResponse::BadRequest().json(format!("{:?}", error)))
+            Err(ErrorBadRequest(format!("{:?}", error)))
         }
         Ok(result) => {
             if !parameters.is_empty() {
@@ -79,7 +79,7 @@ pub fn get_task_from_request(
     settings: &Settings,
     name: String,
     parameters: Option<HashMap<String, String>>,
-) -> Result<AddMessage, HttpResponse> {
+) -> Result<AddMessage, Error> {
     let parameters = parameters.unwrap_or_default();
 
     let webhook = settings.get_webhook_by_name(&name)?;

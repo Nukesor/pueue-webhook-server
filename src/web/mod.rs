@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
+use std::path::PathBuf;
 
 use actix_web::*;
-use anyhow::{anyhow, Result};
+use anyhow::{bail, Context, Result};
 use config::ConfigError;
-use rustls::internal::pemfile::{certs, rsa_private_keys};
-use rustls::{NoClientAuth, ServerConfig};
+use rustls::{Certificate, PrivateKey, ServerConfig};
+use rustls_pemfile::{pkcs8_private_keys, rsa_private_keys};
 use serde::Deserialize;
 
 mod authentication;
@@ -33,9 +34,9 @@ pub async fn run_web_server(settings: Settings) -> Result<()> {
     let settings_for_app = settings.clone();
     let server = HttpServer::new(move || {
         App::new()
-            .data(AppState {
+            .app_data(web::Data::new(AppState {
                 settings: settings_for_app.clone(),
-            })
+            }))
             .service(web::resource("/{webhook_name}").to(webhook))
         //.service(web::resource("/").to(index))
     })
@@ -53,15 +54,18 @@ pub async fn run_web_server(settings: Settings) -> Result<()> {
             .ssl_private_key
             .as_ref()
             .ok_or_else(|| ConfigError::NotFound("ssl_private_key".to_string()))?;
-        let cert_file = &mut BufReader::new(File::open(chain_path)?);
-        let key_file = &mut BufReader::new(File::open(key_path)?);
 
-        let cert_chain = certs(cert_file).map_err(|_| anyhow!("Failed to read ssl certs"))?;
-        let mut keys =
-            rsa_private_keys(key_file).map_err(|_| anyhow!("Failed to read ssl private key"))?;
+        let certs = load_certs(PathBuf::from(chain_path))?;
+        let key = load_key(PathBuf::from(key_path))?;
 
-        let mut config = ServerConfig::new(NoClientAuth::new());
-        config.set_single_cert(cert_chain, keys.remove(0))?;
+        let config = ServerConfig::builder()
+            .with_safe_default_cipher_suites()
+            .with_safe_default_kx_groups()
+            .with_safe_default_protocol_versions()
+            .expect("Couldn't enforce TLS1.2 and TLS 1.3. This is a bug.")
+            .with_no_client_auth()
+            .with_single_cert(certs, key)
+            .context("Failed to build server TLS config.".to_string())?;
 
         server.bind_rustls(address, config)?.run().await?;
     } else {
@@ -69,4 +73,42 @@ pub async fn run_web_server(settings: Settings) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Load the passed certificates file
+fn load_certs(path: PathBuf) -> Result<Vec<Certificate>> {
+    let file = File::open(&path).context(format!("Cannot open cert at {path:?}"))?;
+    let certs: Vec<Certificate> = rustls_pemfile::certs(&mut BufReader::new(file))
+        .context("Failed to parse certificate")?
+        .into_iter()
+        .map(Certificate)
+        .collect();
+
+    Ok(certs)
+}
+
+/// Load the passed keys file.
+/// Only the first key will be used. It should match the certificate.
+fn load_key(path: PathBuf) -> Result<PrivateKey> {
+    let file = File::open(&path).context(format!("Cannot open key {path:?}"))?;
+
+    // Try to read pkcs8 format first
+    let keys =
+        pkcs8_private_keys(&mut BufReader::new(&file)).context("Failed to parse pkcs8 format.");
+
+    if let Ok(keys) = keys {
+        if let Some(key) = keys.into_iter().next() {
+            return Ok(PrivateKey(key));
+        }
+    }
+
+    // Try the normal rsa format afterwards.
+    let keys =
+        rsa_private_keys(&mut BufReader::new(file)).context("Failed to parse daemon key.")?;
+
+    if let Some(key) = keys.into_iter().next() {
+        return Ok(PrivateKey(key));
+    }
+
+    bail!("Couldn't extract private key from keyfile {path:?}")
 }
