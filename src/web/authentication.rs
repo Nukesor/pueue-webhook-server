@@ -201,9 +201,6 @@ mod tests {
             basic_auth_user: None,
             basic_auth_password: None,
             basic_auth_and_secret: false,
-            pueue_port: None,
-            pueue_unix_socket: None,
-            pueue_directory: String::new(),
             webhooks: Vec::new(),
         };
 

@@ -20,16 +20,6 @@ fn default_pueue_group() -> String {
     "webhook".to_string()
 }
 
-pub fn default_pueue_path() -> Result<String> {
-    let path = dirs::home_dir()
-        .ok_or_else(|| anyhow!("Couldn't resolve home dir"))?
-        .join(".local/share/pueue");
-    Ok(path
-        .to_str()
-        .ok_or_else(|| anyhow!("Failed to parse log path (Weird characters?)"))?
-        .to_string())
-}
-
 #[derive(Debug, Deserialize, Clone)]
 pub struct Settings {
     pub domain: String,
@@ -40,9 +30,6 @@ pub struct Settings {
     pub basic_auth_user: Option<String>,
     pub basic_auth_password: Option<String>,
     pub basic_auth_and_secret: bool,
-    pub pueue_port: Option<String>,
-    pub pueue_unix_socket: Option<String>,
-    pub pueue_directory: String,
     pub webhooks: Vec<Webhook>,
 }
 
@@ -57,10 +44,6 @@ impl Settings {
         settings.set_default("ssl_cert_chain", None::<String>)?;
         settings.set_default("basic_auth_user", None::<String>)?;
         settings.set_default("basic_auth_password", None::<String>)?;
-        settings.set_default("basic_auth_and_secret", false)?;
-        settings.set_default("pueue_port", Some("6924".to_string()))?;
-        settings.set_default("pueue_unix_socket", None::<String>)?;
-        settings.set_default("pueue_directory", default_pueue_path()?)?;
 
         settings = parse_config(settings)?;
         let settings: Settings = settings.try_into()?;
