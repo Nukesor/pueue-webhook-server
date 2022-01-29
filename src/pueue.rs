@@ -24,10 +24,11 @@ pub async fn get_pueue_socket(settings: &Settings) -> Result<GenericStream> {
     }
 
     // Every webhook can run in a separate pueue group.
+    // Get the currently available Pueue groups, so we know which groups we have to create.
     let state = get_state(&mut stream).await?;
-    let existing_groups: Vec<String> = state.groups.keys().cloned().collect();
+    let mut existing_groups: Vec<String> = state.groups.keys().cloned().collect();
 
-    // Create those groups, if they don't exist yet.
+    // Create all missing groups in Pueue.
     for webhook in settings.webhooks.iter() {
         if !existing_groups.contains(&webhook.pueue_group) {
             info!("Create new pueue group {}", webhook.pueue_group);
@@ -37,6 +38,7 @@ pub async fn get_pueue_socket(settings: &Settings) -> Result<GenericStream> {
                 parallel_tasks: None,
             });
             send_message(message, &mut stream).await?;
+            existing_groups.push(webhook.pueue_group.clone());
         }
     }
 
