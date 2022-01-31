@@ -123,15 +123,14 @@ dependencies = [
 
 [[package]]
 name = "actix-tls"
-version = "3.0.1"
+version = "3.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b161450ff646361005a300716e85856780ddc2fde569fd81335cc3c15b2e0933"
+checksum = "a31ab31563b611fa822480b4255e8750cf0af9ce1b8b7bde298afe8447ef9333"
 dependencies = [
  "actix-codec",
  "actix-rt",
  "actix-service",
  "actix-utils",
- "derive_more",
  "futures-core",
  "log",
  "pin-project-lite",
@@ -1135,9 +1134,9 @@ dependencies = [
 
 [[package]]
 name = "pueue-lib"
-version = "0.19.0"
+version = "0.19.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f17d9c6ee1f67a02029708f852334b10779c5c6842d27b913878502fe4d1decb"
+checksum = "d745684f3816af50a84d4129e3e13fd4c44d303c8e94707d511799980b2a97af"
 dependencies = [
  "async-trait",
  "byteorder",
@@ -1269,9 +1268,9 @@ checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 
 [[package]]
 name = "rev_buf_reader"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5be7eaf8415a214da18dcf43c4db1c70394f68d77a0c6a20f33e95e7eba4f741"
+checksum = "8c0f2e47e00e29920959826e2e1784728a3780d1a784247be5257258cc75f910"
 dependencies = [
  "memchr",
 ]
