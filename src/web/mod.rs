@@ -8,7 +8,7 @@ use anyhow::{bail, Context, Result};
 use config::ConfigError;
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{pkcs8_private_keys, rsa_private_keys};
-use serde::Deserialize;
+use serde_derive::Deserialize;
 
 mod authentication;
 mod helper;

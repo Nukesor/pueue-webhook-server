@@ -5,7 +5,7 @@ use anyhow::{anyhow, Result};
 use config::ConfigError;
 use config::*;
 use log::{info, warn};
-use serde::Deserialize;
+use serde_derive::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Webhook {
