@@ -137,15 +137,6 @@ This would result in the execution of `ls -al /tmp` by the server.
     [Github guide](https://developer.github.com/webhooks/securing/)
 - `X-Hub-Signature`: If there is no `Signature`, this header will be used for the signature check (to support Github's webhooks).
 
-## Query current status
-
-You can get the current state of the webhook scheduler and finished tasks by querying the root (`/`) of the server.
-This will give you a JSON response with information about pretty much everything going on right now.
-
-To access the route, authenticate via `Basic` authorization.
-If no `Basic` authorization is specified while a secret exists, the secret will be used with an empty body.
-In case no authentication is used at all, the status can be queried by anyone. Please use some kind of authentication.
-
 ## Security
 
 **Code injection:**
