@@ -20,7 +20,7 @@ path = "src/main.rs"
 [dependencies]
 rustls = "0.20"
 rustls-pemfile = "0.2"
-actix-web = { version="4.0.0-rc.2", features=["rustls"] }
+actix-web = { version="4", features=["rustls"] }
 handlebars = "4"
 
 config = "0.11"

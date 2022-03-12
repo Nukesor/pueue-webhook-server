@@ -32,7 +32,7 @@ use crate::web::{AppState, Payload};
 pub async fn webhook(
     data: web::Data<AppState>,
     path_info: web::Path<String>,
-    request: web::HttpRequest,
+    request: HttpRequest,
     body: web::Bytes,
 ) -> Result<HttpResponse, Error> {
     let body: Vec<u8> = body.to_vec();

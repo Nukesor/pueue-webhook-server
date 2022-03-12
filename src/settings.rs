@@ -11,7 +11,7 @@ use serde_derive::Deserialize;
 pub struct Webhook {
     pub name: String,
     pub command: String,
-    pub cwd: String,
+    pub cwd: PathBuf,
     #[serde(default = "default_pueue_group")]
     pub pueue_group: String,
 }
