@@ -1,9 +1,11 @@
-use std::path::{Path, PathBuf};
+use std::{
+    fs::File,
+    io::BufReader,
+    path::{Path, PathBuf},
+};
 
 use actix_web::error::{Error, ErrorBadRequest};
-use anyhow::{anyhow, Result};
-use config::ConfigError;
-use config::*;
+use anyhow::{anyhow, bail, Context, Result};
 use log::{info, warn};
 use serde_derive::Deserialize;
 
@@ -24,39 +26,36 @@ fn default_pueue_group() -> String {
 pub struct Settings {
     pub domain: String,
     pub port: i32,
+    #[serde(default = "Default::default")]
     pub secret: Option<String>,
+    #[serde(default = "Default::default")]
     pub ssl_private_key: Option<String>,
+    #[serde(default = "Default::default")]
     pub ssl_cert_chain: Option<String>,
+    #[serde(default = "Default::default")]
     pub basic_auth_user: Option<String>,
+    #[serde(default = "Default::default")]
     pub basic_auth_password: Option<String>,
+    #[serde(default = "Default::default")]
     pub basic_auth_and_secret: bool,
+    #[serde(default = "Default::default")]
     pub webhooks: Vec<Webhook>,
 }
 
 impl Settings {
     pub fn new() -> Result<Self> {
         info!("Init settings file");
-        let mut settings = config::Config::default();
-        settings.set_default("domain", "127.0.0.1")?;
-        settings.set_default("port", "8000")?;
-        settings.set_default("secret", None::<String>)?;
-        settings.set_default("ssl_private_key", None::<String>)?;
-        settings.set_default("ssl_cert_chain", None::<String>)?;
-        settings.set_default("basic_auth_user", None::<String>)?;
-        settings.set_default("basic_auth_password", None::<String>)?;
-
-        settings = parse_config(settings)?;
-        let settings: Settings = settings.try_into()?;
+        let settings = parse_config()?;
 
         if settings.basic_auth_password.is_some() || settings.basic_auth_user.is_some() {
             settings
                 .basic_auth_user
                 .as_ref()
-                .ok_or_else(|| ConfigError::NotFound("basic_auth_user".to_string()))?;
+                .ok_or_else(|| anyhow!("Can't find basic_auth_user in config"))?;
             settings
                 .basic_auth_password
                 .as_ref()
-                .ok_or_else(|| ConfigError::NotFound("basic_auth_password".to_string()))?;
+                .ok_or_else(|| anyhow!("Can't find basic_auth_password in config"))?;
         }
 
         // Verify that everything is in place, if `basic_auth_and_secret` is activated
@@ -64,15 +63,15 @@ impl Settings {
             settings
                 .secret
                 .as_ref()
-                .ok_or_else(|| ConfigError::NotFound("secret".to_string()))?;
+                .ok_or_else(|| anyhow!("Can't find secret in config"))?;
             settings
                 .basic_auth_user
                 .as_ref()
-                .ok_or_else(|| ConfigError::NotFound("basic_auth_user".to_string()))?;
+                .ok_or_else(|| anyhow!("Can't find basic_auth_user in config"))?;
             settings
                 .basic_auth_password
                 .as_ref()
-                .ok_or_else(|| ConfigError::NotFound("basic_auth_password".to_string()))?;
+                .ok_or_else(|| anyhow!("Can't find basic_auth_password in config"))?;
         }
 
         Ok(settings)
@@ -86,32 +85,34 @@ impl Settings {
             }
         }
 
-        let error = format!("Couldn't find webhook with name: {}", name);
+        let error = format!("Can't find webhook with name: {}", name);
         warn!("{}", error);
         Err(ErrorBadRequest(error))
     }
 }
 
-fn parse_config(mut settings: Config) -> Result<Config> {
+fn parse_config() -> Result<Settings> {
     info!("Parsing config files");
     let config_paths = get_config_paths()?;
 
     for path in config_paths.into_iter() {
         info!("Checking path: {:?}", &path);
         if path.exists() {
-            info!("Parsing config file at: {:?}", path);
-            let config_file = config::File::with_name(path.to_str().unwrap());
-            settings.merge(config_file)?;
+            info!("Using config file at: {:?}", path);
+            let file = File::open(path).context("Failed to open file.")?;
+            let reader = BufReader::new(file);
+
+            return serde_yaml::from_reader(reader).context("Failed to deserialize settings");
         }
     }
 
-    Ok(settings)
+    bail!("Can't find suitable settings file")
 }
 
 #[cfg(target_os = "linux")]
 fn get_config_paths() -> Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
-    let home_dir = dirs::home_dir().ok_or_else(|| anyhow!("Couldn't resolve home dir"))?;
+    let home_dir = dirs::home_dir().ok_or_else(|| anyhow!("Can't resolve home dir"))?;
     paths.push(Path::new("/etc/webhook_server.yml").to_path_buf());
     paths.push(home_dir.join(".config/webhook_server.yml"));
     paths.push(Path::new("./webhook_server.yml").to_path_buf());
@@ -123,7 +124,7 @@ fn get_config_paths() -> Result<Vec<PathBuf>> {
 fn get_config_paths() -> Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
 
-    let home_dir = dirs::home_dir().ok_or_else(|| anyhow!("Couldn't resolve home dir"))?;
+    let home_dir = dirs::home_dir().ok_or_else(|| anyhow!("Can't resolve home dir"))?;
     paths.push(home_dir.join("AppData\\Roaming\\webhook_server\\webhook_server.yml"));
     paths.push(Path::new(".\\webhook_server.yml").to_path_buf());
 
@@ -134,7 +135,7 @@ fn get_config_paths() -> Result<Vec<PathBuf>> {
 fn get_config_paths() -> Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
 
-    let home_dir = dirs::home_dir().ok_or_else(|| anyhow!("Couldn't resolve home dir"))?;
+    let home_dir = dirs::home_dir().ok_or_else(|| anyhow!("Can't resolve home dir"))?;
     paths.push(home_dir.join("Library/Application Support/webhook_server.yml"));
     paths.push(home_dir.join("Library/Preferences/webhook_server.yml"));
     paths.push(Path::new("./webhook_server.yml").to_path_buf());

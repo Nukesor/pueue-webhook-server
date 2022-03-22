@@ -4,8 +4,7 @@ use std::io::BufReader;
 use std::path::PathBuf;
 
 use actix_web::*;
-use anyhow::{bail, Context, Result};
-use config::ConfigError;
+use anyhow::{anyhow, bail, Context, Result};
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{pkcs8_private_keys, rsa_private_keys};
 use serde_derive::Deserialize;
@@ -49,11 +48,11 @@ pub async fn run_web_server(settings: Settings) -> Result<()> {
         let chain_path = settings
             .ssl_cert_chain
             .as_ref()
-            .ok_or_else(|| ConfigError::NotFound("ssl_cert_chain".to_string()))?;
+            .ok_or_else(|| anyhow!("Can't find ssl_cert_chain in config"))?;
         let key_path = settings
             .ssl_private_key
             .as_ref()
-            .ok_or_else(|| ConfigError::NotFound("ssl_private_key".to_string()))?;
+            .ok_or_else(|| anyhow!("Can't find ssl_private_key in config"))?;
 
         let certs = load_certs(PathBuf::from(chain_path))?;
         let key = load_key(PathBuf::from(key_path))?;
@@ -62,7 +61,7 @@ pub async fn run_web_server(settings: Settings) -> Result<()> {
             .with_safe_default_cipher_suites()
             .with_safe_default_kx_groups()
             .with_safe_default_protocol_versions()
-            .expect("Couldn't enforce TLS1.2 and TLS 1.3. This is a bug.")
+            .expect("Can't enforce TLS1.2 and TLS 1.3. This is a bug.")
             .with_no_client_auth()
             .with_single_cert(certs, key)
             .context("Failed to build server TLS config.".to_string())?;
@@ -110,5 +109,5 @@ fn load_key(path: PathBuf) -> Result<PrivateKey> {
         return Ok(PrivateKey(key));
     }
 
-    bail!("Couldn't extract private key from keyfile {path:?}")
+    bail!("Can't extract private key from keyfile {path:?}")
 }
