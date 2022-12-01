@@ -23,7 +23,7 @@ Take a look at the example config file [webhook_server.yml](https://github.com/N
 ```bash
 git clone https://github.com/nukesor/webhook-server
 cd webhook-server
-cargo install --path .
+cargo install --path --locked .
 ```
 
 Your `$CARGO_HOME/bin` folder should be in your $PATH.
