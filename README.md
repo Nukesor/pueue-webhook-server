@@ -21,8 +21,8 @@ Take a look at the example config file [webhook_server.yml](https://github.com/N
 **Manual installation:**
 
 ```bash
-git clone https://github.com/nukesor/webhook-server
-cd webhook-server
+git clone https://github.com/nukesor/pueue-webhook-server
+cd pueue-webhook-server
 cargo install --locked --path .
 ```
 
