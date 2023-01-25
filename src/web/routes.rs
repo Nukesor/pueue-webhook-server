@@ -36,24 +36,19 @@ pub async fn webhook(
     body: web::Bytes,
 ) -> Result<HttpResponse, Error> {
     let body: Vec<u8> = body.to_vec();
-    let payload: Payload;
-    match *request.method() {
-        Method::POST => {
-            payload = get_payload(&body)?;
-        }
-        _ => {
-            payload = Payload::default();
-        }
-    }
-    let headers = get_headers_hash_map(request.headers())?;
+    let payload = match *request.method() {
+        Method::POST => get_payload(&body)?,
+        _ => Payload::default(),
+    };
 
+    let headers = get_headers_hash_map(request.headers())?;
     let webhook_name = path_info.into_inner();
 
     // Check the credentials and signature headers of the request
     verify_authentication_header(&data.settings, &headers, &body)?;
 
-    info!("Incoming webhook for \"{}\":", webhook_name);
-    debug!("Got payload: {:?}", payload);
+    info!("Incoming webhook for \"{webhook_name}\":");
+    debug!("Got payload: {payload:?}");
 
     // Create a new task with the checked parameters and webhook name
     let new_task = get_task_from_request(&data.settings, webhook_name, payload.parameters)?;
@@ -62,13 +57,13 @@ pub async fn webhook(
         Ok(socket) => socket,
         Err(err) => {
             return Ok(HttpResponse::InternalServerError()
-                .body(format!("Pueue daemon cannot be reached: {:?}", err)))
+                .body(format!("Pueue daemon cannot be reached: {err:?}")))
         }
     };
 
     if let Err(err) = send_message(Message::Add(new_task), &mut socket).await {
         return Ok(HttpResponse::InternalServerError()
-            .body(format!("Failed to send message to Pueue daemon: {:?}", err)));
+            .body(format!("Failed to send message to Pueue daemon: {err:?}")));
     };
 
     Ok(HttpResponse::Ok().finish())

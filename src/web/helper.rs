@@ -14,8 +14,8 @@ pub fn get_payload(body: &[u8]) -> Result<Payload, Error> {
     match serde_json::from_slice(body) {
         Ok(payload) => Ok(payload),
         Err(error) => {
-            let message = format!("Json error: {}", error);
-            warn!("{}", message);
+            let message = format!("Json error: {error}");
+            warn!("{message}");
             Err(ErrorUnauthorized(message))
         }
     }
@@ -27,12 +27,11 @@ pub fn get_headers_hash_map(map: &HeaderMap) -> Result<HashMap<String, String>, 
 
     for (key, header_value) in map.iter() {
         let key = key.as_str().to_string();
-        let value: String;
-        match header_value.to_str() {
-            Ok(header_value) => value = header_value.to_string(),
+        let value = match header_value.to_str() {
+            Ok(header_value) => header_value.to_string(),
             Err(error) => {
-                let message = format!("Couldn't parse header: {}", error);
-                warn!("{}", message);
+                let message = format!("Couldn't parse header: {error}");
+                warn!("{message}");
                 return Err(ErrorUnauthorized(message));
             }
         };
@@ -49,7 +48,7 @@ pub fn verify_template_parameters(
     parameters: &HashMap<String, String>,
 ) -> Result<String, Error> {
     if !parameters.is_empty() {
-        info!("Got parameters: {:?}", parameters);
+        info!("Got parameters: {parameters:?}");
     }
     // Create a new handlebar instance and enable strict mode to prevent missing or malformed arguments
     let mut handlebars = Handlebars::new();
@@ -59,15 +58,12 @@ pub fn verify_template_parameters(
     let result = handlebars.render_template(&template, parameters);
     match result {
         Err(error) => {
-            warn!(
-                "Error rendering command with params: {:?}. Error: {:?}",
-                parameters, error
-            );
-            Err(ErrorBadRequest(format!("{:?}", error)))
+            warn!("Error rendering command with params: {parameters:?}. Error: {error:?}");
+            Err(ErrorBadRequest(format!("{error:?}")))
         }
         Ok(result) => {
             if !parameters.is_empty() {
-                info!("Template renders properly: {}", result);
+                info!("Template renders properly: {result}");
             }
             Ok(result)
         }

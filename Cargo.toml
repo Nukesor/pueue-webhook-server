@@ -15,28 +15,23 @@ rust-version = "1.65"
 [[bin]]
 name = "webhookserver"
 path = "src/main.rs"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rustls = "0.20"
-rustls-pemfile = "1"
 actix-web = { version = "4", features = ["rustls"] }
-handlebars = "4"
-
-dirs = "4"
 anyhow = "1"
-log = "0.4"
-simplelog = "0.12"
-
-pueue-lib = "0.20"
-
-serde = "1"
-serde_yaml = "0.9"
-serde_derive = "1"
-serde_json = "1"
-
+base64 = "0.21"
+dirs = "4"
+handlebars = "4"
 hex = "0.4"
 hmac = "0.12"
+log = "0.4"
+pueue-lib = "0.21"
+rustls = "0.20"
+rustls-pemfile = "1"
+serde = "1"
+serde_derive = "1"
+serde_json = "1"
+serde_yaml = "0.9"
 sha-1 = "0.10"
-base64 = "0.13"
+simplelog = "0.12"

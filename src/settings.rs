@@ -85,7 +85,7 @@ impl Settings {
             }
         }
 
-        let error = format!("Can't find webhook with name: {}", name);
+        let error = format!("Can't find webhook with name: {name}");
         warn!("{}", error);
         Err(ErrorBadRequest(error))
     }

@@ -1,6 +1,11 @@
 use std::collections::HashMap;
 
 use actix_web::error::{Error, ErrorUnauthorized};
+use base64::{
+    alphabet,
+    engine::{general_purpose, GeneralPurpose},
+    Engine,
+};
 use hmac::{Hmac, Mac};
 use log::warn;
 use sha1::Sha1;
@@ -144,7 +149,8 @@ fn verify_basic_auth_header(
     let token = header.split_off(6);
 
     // Decode base64 string to bytes
-    let token = if let Ok(token) = base64::decode(&token) {
+    let engine = GeneralPurpose::new(&alphabet::URL_SAFE, general_purpose::NO_PAD);
+    let token = if let Ok(token) = engine.decode(token) {
         token
     } else {
         warn!("Got request with malformed base64");
