@@ -21,7 +21,7 @@ path = "src/main.rs"
 actix-web = { version = "4", features = ["rustls"] }
 anyhow = "1"
 base64 = "0.21"
-dirs = "4"
+dirs = "5"
 handlebars = "4"
 hex = "0.4"
 hmac = "0.12"
