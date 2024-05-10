@@ -17,10 +17,10 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
-      - uses: hecrj/setup-rust-action@v1
+      - uses: hecrj/setup-rust-action@v2
         with:
           rust-version: stable
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - name: Build
         run: cargo build --verbose
