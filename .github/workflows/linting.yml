@@ -1,0 +1,32 @@
+name: Linting
+
+on:
+  push:
+    banches:
+      - main
+  pull_request:
+    banches:
+      - main
+
+jobs:
+  build:
+    name: Test building for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: cargo fmt
+        run: cargo fmt --all -- --check
+
+      - name: cargo clippy
+        run: cargo clippy --tests --workspace -- -D warnings
