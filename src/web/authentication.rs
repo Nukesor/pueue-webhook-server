@@ -222,7 +222,7 @@ mod tests {
     fn add_signature_header(
         settings: &Settings,
         headers: &mut HashMap<String, String>,
-        body: &Vec<u8>,
+        body: &[u8],
     ) {
         let hmac = generate_signature_sha1(&settings.secret.clone().unwrap().into_bytes(), body);
         let prefix = "sha1=".to_string();
@@ -233,10 +233,12 @@ mod tests {
     }
 
     fn add_basic_auth_header(headers: &mut HashMap<String, String>) {
-        let basic_header = format!("TestUser:TestPassword").into_bytes();
+        let custom_engine = GeneralPurpose::new(&alphabet::URL_SAFE, general_purpose::NO_PAD);
+
+        let basic_header = "TestUser:TestPassword".as_bytes();
         headers.insert(
             "authorization".to_string(),
-            "Basic ".to_string() + &base64::encode(&basic_header),
+            "Basic ".to_string() + &custom_engine.encode(basic_header),
         );
     }
 
