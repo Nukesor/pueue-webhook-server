@@ -17,10 +17,13 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
-      - uses: hecrj/setup-rust-action@v1
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
-          rust-version: stable
-      - uses: actions/checkout@v1
+          targets: ${{ matrix.target }}
 
       - name: Build
         run: cargo build --verbose
