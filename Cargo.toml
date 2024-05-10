@@ -10,7 +10,7 @@ license = "MIT"
 keywords = ["webhook", "server", "script", "executor", "https"]
 readme = "README.md"
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.78"
 
 [[bin]]
 name = "webhookserver"
@@ -20,13 +20,13 @@ path = "src/main.rs"
 [dependencies]
 actix-web = { version = "4", features = ["rustls"] }
 anyhow = "1"
-base64 = "0.21"
+base64 = "0.22"
 dirs = "5"
-handlebars = "4"
+handlebars = "5"
 hex = "0.4"
 hmac = "0.12"
 log = "0.4"
-pueue-lib = "0.21"
+pueue-lib = "0.26"
 rustls = "0.20"
 rustls-pemfile = "1"
 serde = "1"
