@@ -84,12 +84,13 @@ pub fn get_task_from_request(
     Ok(AddMessage {
         command,
         path: webhook.cwd,
-        envs: HashMap::new(),
+        envs: std::env::vars().collect(),
         group: "webhook".to_string(),
         enqueue_at: None,
         dependencies: Vec::new(),
         label: None,
         print_task_id: false,
+        priority: None,
         start_immediately: false,
         stashed: false,
     })
