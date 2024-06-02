@@ -5,7 +5,8 @@ use std::path::PathBuf;
 
 use actix_web::*;
 use anyhow::{anyhow, bail, Context, Result};
-use rustls::{Certificate, PrivateKey, ServerConfig};
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use rustls::ServerConfig;
 use rustls_pemfile::{pkcs8_private_keys, rsa_private_keys};
 use serde_derive::Deserialize;
 
@@ -58,15 +59,11 @@ pub async fn run_web_server(settings: Settings) -> Result<()> {
         let key = load_key(PathBuf::from(key_path))?;
 
         let config = ServerConfig::builder()
-            .with_safe_default_cipher_suites()
-            .with_safe_default_kx_groups()
-            .with_safe_default_protocol_versions()
-            .expect("Can't enforce TLS1.2 and TLS 1.3. This is a bug.")
             .with_no_client_auth()
             .with_single_cert(certs, key)
             .context("Failed to build server TLS config.".to_string())?;
 
-        server.bind_rustls(address, config)?.run().await?;
+        server.bind_rustls_0_23(address, config)?.run().await?;
     } else {
         server.bind(address)?.run().await?;
     }
@@ -75,12 +72,13 @@ pub async fn run_web_server(settings: Settings) -> Result<()> {
 }
 
 /// Load the passed certificates file
-fn load_certs(path: PathBuf) -> Result<Vec<Certificate>> {
+fn load_certs<'a>(path: PathBuf) -> Result<Vec<CertificateDer<'a>>> {
     let file = File::open(&path).context(format!("Cannot open cert at {path:?}"))?;
-    let certs: Vec<Certificate> = rustls_pemfile::certs(&mut BufReader::new(file))
-        .context("Failed to parse certificate")?
+    let certs: Vec<CertificateDer> = rustls_pemfile::certs(&mut BufReader::new(file))
+        .collect::<Result<Vec<_>, std::io::Error>>()
+        .map_err(|err| anyhow!("Failed to parse daemon certificate.: {err:?}"))?
         .into_iter()
-        .map(Certificate)
+        .map(CertificateDer::from)
         .collect();
 
     Ok(certs)
@@ -88,25 +86,27 @@ fn load_certs(path: PathBuf) -> Result<Vec<Certificate>> {
 
 /// Load the passed keys file.
 /// Only the first key will be used. It should match the certificate.
-fn load_key(path: PathBuf) -> Result<PrivateKey> {
+fn load_key<'a>(path: PathBuf) -> Result<PrivateKeyDer<'a>> {
     let file = File::open(&path).context(format!("Cannot open key {path:?}"))?;
 
     // Try to read pkcs8 format first
-    let keys =
-        pkcs8_private_keys(&mut BufReader::new(&file)).context("Failed to parse pkcs8 format.");
+    let keys = pkcs8_private_keys(&mut BufReader::new(&file))
+        .collect::<Result<Vec<_>, std::io::Error>>()
+        .map_err(|_| anyhow!("Failed to parse pkcs8 format."));
 
     if let Ok(keys) = keys {
         if let Some(key) = keys.into_iter().next() {
-            return Ok(PrivateKey(key));
+            return Ok(PrivateKeyDer::Pkcs8(key));
         }
     }
 
     // Try the normal rsa format afterwards.
-    let keys =
-        rsa_private_keys(&mut BufReader::new(file)).context("Failed to parse daemon key.")?;
+    let keys = rsa_private_keys(&mut BufReader::new(file))
+        .collect::<Result<Vec<_>, std::io::Error>>()
+        .map_err(|_| anyhow!("Failed to parse daemon key."))?;
 
     if let Some(key) = keys.into_iter().next() {
-        return Ok(PrivateKey(key));
+        return Ok(PrivateKeyDer::Pkcs1(key));
     }
 
     bail!("Can't extract private key from keyfile {path:?}")
