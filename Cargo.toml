@@ -22,7 +22,7 @@ actix-web = { version = "4", features = ["rustls-0_23"] }
 anyhow = "1"
 base64 = "0.22"
 dirs = "5"
-handlebars = "5"
+handlebars = "6"
 hex = "0.4"
 hmac = "0.12"
 log = "0.4"
