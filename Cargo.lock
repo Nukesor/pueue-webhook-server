@@ -2138,7 +2138,6 @@ dependencies = [
  "rustls",
  "rustls-pemfile",
  "serde",
- "serde_derive",
  "serde_json",
  "serde_yaml",
  "sha-1",

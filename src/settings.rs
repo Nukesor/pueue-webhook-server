@@ -7,7 +7,7 @@ use std::{
 use actix_web::error::{Error, ErrorBadRequest};
 use anyhow::{anyhow, bail, Context, Result};
 use log::{info, warn};
-use serde_derive::Deserialize;
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Webhook {
