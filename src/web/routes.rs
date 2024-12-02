@@ -11,7 +11,7 @@ use crate::web::authentication::verify_authentication_header;
 use crate::web::helper::*;
 use crate::web::{AppState, Payload};
 
-/// Index route for getting current state of the server
+// Index route for getting current state of the server
 //pub async fn index(
 //    data: web::Data<AppState>,
 //    request: web::HttpRequest,
