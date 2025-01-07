@@ -1,9 +1,12 @@
-# Webhook-Server
+# Pueue Webhook Server
 
- [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 This little helper serves a simple purpose: Execute commands on your server on incoming http requests.
 It has been designed for continuous integration and supports Github's webhooks out of the box.
+
+This project is mostly used by myself. You may also use it if you like.
+However, I don't plan to provide proper support for this project as I do for my other projects.
 
 Webhook-Server works in conjunction with [Pueue](https://github.com/nukesor/pueue), which allows easy output inspection, loggin and debugging of your webhook calls.
 
@@ -55,11 +58,10 @@ Config values of higher hierarchy config files are overwritten by lower hierarch
 
 ```yaml
 webhooks:
-  -
-    name: 'ls'
-    command: '/bin/ls {{param1}} {{param2}}'
-    cwd: '/home/user'
-    pueue_group: 'webhook'
+  - name: "ls"
+    command: "/bin/ls {{param1}} {{param2}}"
+    cwd: "/home/user"
+    pueue_group: "webhook"
 ```
 
 **Webhook config values**
@@ -118,10 +120,10 @@ For instance, the payload for the command `'/bin/ls {{param1}} {{param2}}'` coul
 
 ```json
 {
-    "parameters": {
-        "param1": "-al",
-        "param2": "/tmp"
-    }
+  "parameters": {
+    "param1": "-al",
+    "param2": "/tmp"
+  }
 }
 ```
 
@@ -131,10 +133,10 @@ This would result in the execution of `ls -al /tmp` by the server.
 
 - `Authorization`: If `basic_auth_username` and `basic_auth_password` is specified, this should be the standard `Basic` base64 encoded authorization header. [Basic Auth guide](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization)
 - `Signature:` If you specify a secret, the content of the signature is the HMAC of the json payload with the UTF8-encoded secret as key.
-    This procedure is based on Github's webhook secret system. (Github tells you to use a hex key, but they interpret it as UTF8 themselves -.-)  
-    Python example: `hmac.new(key, payload, hashlib.sha1)`  
-    Ruby example: `OpenSSL::HMAC.hexdigest("SHA1", key, payload)`  
-    [Github guide](https://developer.github.com/webhooks/securing/)
+  This procedure is based on Github's webhook secret system. (Github tells you to use a hex key, but they interpret it as UTF8 themselves -.-)
+  Python example: `hmac.new(key, payload, hashlib.sha1)`
+  Ruby example: `OpenSSL::HMAC.hexdigest("SHA1", key, payload)`
+  [Github guide](https://developer.github.com/webhooks/securing/)
 - `X-Hub-Signature`: If there is no `Signature`, this header will be used for the signature check (to support Github's webhooks).
 
 ## Security
@@ -152,5 +154,5 @@ Especially when using Basic Auth or templating it's highly recommended to use SS
 This can be either done by your proxy web server (nginx, apache, caddy) or directly in the application.
 Otherwise your credentials or your template payload could leak to anybody listening.
 
-An example cert and key can be created like this `openssl req -nodes -new -x509 -keyout test.pem -out test.pem`.  
+An example cert and key can be created like this `openssl req -nodes -new -x509 -keyout test.pem -out test.pem`.
 If you need a password input for the private key, please create an issue or PR (much appreciated).
