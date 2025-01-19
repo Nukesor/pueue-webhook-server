@@ -6,7 +6,7 @@ This little helper serves a simple purpose: Execute commands on your server on i
 It has been designed for continuous integration and supports Github's webhooks out of the box.
 
 This project is mostly used by myself. You may also use it if you like.
-However, I don't plan to provide proper support for this project as I do for my other projects.
+However, I don't plan to provide the same level of support for this project as I do for my other projects.
 
 Webhook-Server works in conjunction with [Pueue](https://github.com/nukesor/pueue), which allows easy output inspection, loggin and debugging of your webhook calls.
 
