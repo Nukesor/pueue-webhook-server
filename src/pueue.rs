@@ -1,31 +1,19 @@
-use anyhow::{bail, Result};
-use log::info;
-use pueue_lib::network::message::*;
-use pueue_lib::network::protocol::*;
-use pueue_lib::network::secret::read_shared_secret;
-use pueue_lib::settings::Settings as PueueSettings;
-use pueue_lib::state::State;
+use pueue_lib::{network::message::GroupMessage, prelude::*};
 
-use crate::settings::Settings;
+use crate::{internal_prelude::*, settings::Settings as InternalSettings};
 
-pub async fn get_pueue_socket(settings: &Settings) -> Result<GenericStream> {
-    // Try to read settings from the configuration file.
-    let (pueue_settings, _) = PueueSettings::read(&None)?;
+pub async fn get_pueue_client(settings: &InternalSettings) -> Result<Client> {
+    // Try to read settings from the default configuration file.
+    let (pueue_settings, _) = Settings::read(&None)?;
 
-    let mut stream = get_client_stream(&pueue_settings.shared).await?;
-
-    // Send the secret to the daemon
-    // In case everything was successful, we get a short `hello` response from the daemon.
-    let secret = read_shared_secret(&pueue_settings.shared.shared_secret_path())?;
-    send_bytes(&secret, &mut stream).await?;
-    let hello = receive_bytes(&mut stream).await?;
-    if hello.is_empty() {
-        bail!("Daemon went away after initial connection. Did you use the correct secret?")
-    }
+    // Create client to talk with the daemon and connect.
+    let mut client = Client::new(pueue_settings, true)
+        .await
+        .context("Failed to initialize client.")?;
 
     // Every webhook can run in a separate pueue group.
     // Get the currently available Pueue groups, so we know which groups we have to create.
-    let state = get_state(&mut stream).await?;
+    let state = get_state(&mut client).await?;
     let mut existing_groups: Vec<String> = state.groups.keys().cloned().collect();
 
     // Create all missing groups in Pueue.
@@ -33,29 +21,27 @@ pub async fn get_pueue_socket(settings: &Settings) -> Result<GenericStream> {
         if !existing_groups.contains(&webhook.pueue_group) {
             info!("Create new pueue group {}", webhook.pueue_group);
 
-            let message = Message::Group(GroupMessage::Add {
+            let message = Request::Group(GroupMessage::Add {
                 name: webhook.pueue_group.clone(),
                 parallel_tasks: None,
             });
-            send_message(message, &mut stream).await?;
+            client.send_request(message).await?;
             existing_groups.push(webhook.pueue_group.clone());
         }
     }
 
-    Ok(stream)
+    Ok(client)
 }
 
 // This is a helper function for easy retrieval of the current daemon state.
 // The current daemon state is often needed in more complex commands.
-pub async fn get_state(socket: &mut GenericStream) -> Result<State> {
-    // Create the message payload and send it to the daemon.
-    send_message(Message::Status, socket).await?;
+pub async fn get_state(client: &mut Client) -> Result<State> {
+    // Request the state.
+    client.send_request(Request::Status).await?;
+    let response = client.receive_response().await?;
 
-    // Check if we can receive the response from the daemon
-    let message = receive_message(socket).await?;
-
-    match message {
-        Message::StatusResponse(state) => Ok(*state),
+    match response {
+        Response::Status(state) => Ok(*state),
         _ => unreachable!(),
     }
 }

@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use actix_web::error::{Error, ErrorBadRequest, ErrorUnauthorized};
-use actix_web::http::header::HeaderMap;
+use actix_web::{
+    error::{Error, ErrorBadRequest, ErrorUnauthorized},
+    http::header::HeaderMap,
+};
 use handlebars::Handlebars;
-use log::{info, warn};
 use pueue_lib::network::message::AddMessage;
 
-use crate::settings::Settings;
-use crate::web::Payload;
+use crate::{internal_prelude::*, settings::Settings, web::Payload};
 
 /// We do our own json handling, since Actix doesn't allow multiple extractors at once
 pub fn get_payload(body: &[u8]) -> Result<Payload, Error> {
@@ -50,7 +50,8 @@ pub fn verify_template_parameters(
     if !parameters.is_empty() {
         info!("Got parameters: {parameters:?}");
     }
-    // Create a new handlebar instance and enable strict mode to prevent missing or malformed arguments
+    // Create a new handlebar instance and enable strict mode to prevent missing or malformed
+    // arguments
     let mut handlebars = Handlebars::new();
     handlebars.set_strict_mode(true);
 
@@ -89,7 +90,6 @@ pub fn get_task_from_request(
         enqueue_at: None,
         dependencies: Vec::new(),
         label: None,
-        print_task_id: false,
         priority: None,
         start_immediately: false,
         stashed: false,

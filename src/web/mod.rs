@@ -1,12 +1,10 @@
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::BufReader;
-use std::path::PathBuf;
+use std::{collections::HashMap, fs::File, io::BufReader, path::PathBuf};
 
-use actix_web::*;
-use anyhow::{anyhow, bail, Context, Result};
-use rustls::pki_types::{CertificateDer, PrivateKeyDer};
-use rustls::ServerConfig;
+use actix_web::{web, App, HttpServer};
+use rustls::{
+    pki_types::{CertificateDer, PrivateKeyDer},
+    ServerConfig,
+};
 use rustls_pemfile::{pkcs8_private_keys, rsa_private_keys};
 use serde::Deserialize;
 
@@ -14,8 +12,9 @@ mod authentication;
 mod helper;
 mod routes;
 
-use crate::settings::Settings;
 use routes::*;
+
+use crate::{internal_prelude::*, settings::Settings};
 
 /// State of the actix-web application
 pub struct AppState {
@@ -49,11 +48,11 @@ pub async fn run_web_server(settings: Settings) -> Result<()> {
         let chain_path = settings
             .ssl_cert_chain
             .as_ref()
-            .ok_or_else(|| anyhow!("Can't find ssl_cert_chain in config"))?;
+            .ok_or_else(|| eyre!("Can't find ssl_cert_chain in config"))?;
         let key_path = settings
             .ssl_private_key
             .as_ref()
-            .ok_or_else(|| anyhow!("Can't find ssl_private_key in config"))?;
+            .ok_or_else(|| eyre!("Can't find ssl_private_key in config"))?;
 
         let certs = load_certs(PathBuf::from(chain_path))?;
         let key = load_key(PathBuf::from(key_path))?;
@@ -76,7 +75,7 @@ fn load_certs<'a>(path: PathBuf) -> Result<Vec<CertificateDer<'a>>> {
     let file = File::open(&path).context(format!("Cannot open cert at {path:?}"))?;
     let certs: Vec<CertificateDer> = rustls_pemfile::certs(&mut BufReader::new(file))
         .collect::<Result<Vec<_>, std::io::Error>>()
-        .map_err(|err| anyhow!("Failed to parse daemon certificate.: {err:?}"))?
+        .map_err(|err| eyre!("Failed to parse daemon certificate.: {err:?}"))?
         .into_iter()
         .map(CertificateDer::from)
         .collect();
@@ -92,7 +91,7 @@ fn load_key<'a>(path: PathBuf) -> Result<PrivateKeyDer<'a>> {
     // Try to read pkcs8 format first
     let keys = pkcs8_private_keys(&mut BufReader::new(&file))
         .collect::<Result<Vec<_>, std::io::Error>>()
-        .map_err(|_| anyhow!("Failed to parse pkcs8 format."));
+        .map_err(|_| eyre!("Failed to parse pkcs8 format."));
 
     if let Ok(keys) = keys {
         if let Some(key) = keys.into_iter().next() {
@@ -103,7 +102,7 @@ fn load_key<'a>(path: PathBuf) -> Result<PrivateKeyDer<'a>> {
     // Try the normal rsa format afterwards.
     let keys = rsa_private_keys(&mut BufReader::new(file))
         .collect::<Result<Vec<_>, std::io::Error>>()
-        .map_err(|_| anyhow!("Failed to parse daemon key."))?;
+        .map_err(|_| eyre!("Failed to parse daemon key."))?;
 
     if let Some(key) = keys.into_iter().next() {
         return Ok(PrivateKeyDer::Pkcs1(key));

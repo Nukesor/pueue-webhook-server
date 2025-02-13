@@ -5,9 +5,9 @@ use std::{
 };
 
 use actix_web::error::{Error, ErrorBadRequest};
-use anyhow::{anyhow, bail, Context, Result};
-use log::{info, warn};
 use serde::Deserialize;
+
+use crate::internal_prelude::*;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Webhook {
@@ -51,11 +51,11 @@ impl Settings {
             settings
                 .basic_auth_user
                 .as_ref()
-                .ok_or_else(|| anyhow!("Can't find basic_auth_user in config"))?;
+                .ok_or_else(|| eyre!("Can't find basic_auth_user in config"))?;
             settings
                 .basic_auth_password
                 .as_ref()
-                .ok_or_else(|| anyhow!("Can't find basic_auth_password in config"))?;
+                .ok_or_else(|| eyre!("Can't find basic_auth_password in config"))?;
         }
 
         // Verify that everything is in place, if `basic_auth_and_secret` is activated
@@ -63,15 +63,15 @@ impl Settings {
             settings
                 .secret
                 .as_ref()
-                .ok_or_else(|| anyhow!("Can't find secret in config"))?;
+                .ok_or_else(|| eyre!("Can't find secret in config"))?;
             settings
                 .basic_auth_user
                 .as_ref()
-                .ok_or_else(|| anyhow!("Can't find basic_auth_user in config"))?;
+                .ok_or_else(|| eyre!("Can't find basic_auth_user in config"))?;
             settings
                 .basic_auth_password
                 .as_ref()
-                .ok_or_else(|| anyhow!("Can't find basic_auth_password in config"))?;
+                .ok_or_else(|| eyre!("Can't find basic_auth_password in config"))?;
         }
 
         Ok(settings)
@@ -112,7 +112,7 @@ fn parse_config() -> Result<Settings> {
 #[cfg(target_os = "linux")]
 fn get_config_paths() -> Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
-    let home_dir = dirs::home_dir().ok_or_else(|| anyhow!("Can't resolve home dir"))?;
+    let home_dir = dirs::home_dir().ok_or_else(|| eyre!("Can't resolve home dir"))?;
     paths.push(Path::new("/etc/webhook_server.yml").to_path_buf());
     paths.push(home_dir.join(".config/webhook_server.yml"));
     paths.push(Path::new("./webhook_server.yml").to_path_buf());
@@ -124,7 +124,7 @@ fn get_config_paths() -> Result<Vec<PathBuf>> {
 fn get_config_paths() -> Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
 
-    let home_dir = dirs::home_dir().ok_or_else(|| anyhow!("Can't resolve home dir"))?;
+    let home_dir = dirs::home_dir().ok_or_else(|| eyre!("Can't resolve home dir"))?;
     paths.push(home_dir.join("AppData\\Roaming\\webhook_server\\webhook_server.yml"));
     paths.push(Path::new(".\\webhook_server.yml").to_path_buf());
 
@@ -135,7 +135,7 @@ fn get_config_paths() -> Result<Vec<PathBuf>> {
 fn get_config_paths() -> Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
 
-    let home_dir = dirs::home_dir().ok_or_else(|| anyhow!("Can't resolve home dir"))?;
+    let home_dir = dirs::home_dir().ok_or_else(|| eyre!("Can't resolve home dir"))?;
     paths.push(home_dir.join("Library/Application Support/webhook_server.yml"));
     paths.push(home_dir.join("Library/Preferences/webhook_server.yml"));
     paths.push(Path::new("./webhook_server.yml").to_path_buf());

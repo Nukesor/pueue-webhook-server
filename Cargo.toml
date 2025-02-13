@@ -7,7 +7,7 @@ repository = "https://github.com/nukesor/webhook-server"
 homepage = "https://github.com/nukesor/webhook-server"
 documentation = "https://docs.rs/webhook-server"
 license = "MIT"
-keywords = ["webhook", "server", "script", "executor", "https"]
+keywords = ["executor", "https", "script", "server", "webhook"]
 readme = "README.md"
 edition = "2021"
 rust-version = "1.78"
@@ -19,18 +19,26 @@ path = "src/main.rs"
 
 [dependencies]
 actix-web = { version = "4", features = ["rustls-0_23"] }
-anyhow = "1"
 base64 = "0.22"
+color-eyre = "0.6.3"
 dirs = "5"
 handlebars = "6"
 hex = "0.4"
 hmac = "0.12"
-log = "0.4"
-pueue-lib = "0.27"
+pueue-lib = { version = "0.28", path = "../pueue/pueue_lib", features = [
+    "client",
+] }
 rustls = "0.23"
 rustls-pemfile = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
 sha-1 = "0.10"
-simplelog = "0.12"
+tracing = "0.1.41"
+tracing-error = "0.2.1"
+tracing-subscriber = { version = "0.3.19", features = [
+    "chrono",
+    "env-filter",
+    "fmt",
+    "local-time",
+] }

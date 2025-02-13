@@ -1,15 +1,11 @@
-use actix_web::error::Error;
-use actix_web::http::Method;
-use actix_web::HttpResponse;
-use actix_web::*;
-use log::{debug, info};
-use pueue_lib::network::message::Message;
-use pueue_lib::network::protocol::send_message;
+use actix_web::{error::Error, http::Method, web, HttpRequest, HttpResponse};
+use pueue_lib::Request;
 
-use crate::pueue::get_pueue_socket;
-use crate::web::authentication::verify_authentication_header;
-use crate::web::helper::*;
-use crate::web::{AppState, Payload};
+use crate::{
+    internal_prelude::*,
+    pueue::get_pueue_client,
+    web::{authentication::verify_authentication_header, helper::*, AppState, Payload},
+};
 
 // Index route for getting current state of the server
 //pub async fn index(
@@ -53,15 +49,15 @@ pub async fn webhook(
     // Create a new task with the checked parameters and webhook name
     let new_task = get_task_from_request(&data.settings, webhook_name, payload.parameters)?;
 
-    let mut socket = match get_pueue_socket(&data.settings).await {
-        Ok(socket) => socket,
+    let mut client = match get_pueue_client(&data.settings).await {
+        Ok(client) => client,
         Err(err) => {
             return Ok(HttpResponse::InternalServerError()
                 .body(format!("Pueue daemon cannot be reached: {err:?}")))
         }
     };
 
-    if let Err(err) = send_message(Message::Add(new_task), &mut socket).await {
+    if let Err(err) = client.send_request(Request::Add(new_task)).await {
         return Ok(HttpResponse::InternalServerError()
             .body(format!("Failed to send message to Pueue daemon: {err:?}")));
     };

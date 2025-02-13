@@ -1,23 +1,28 @@
 mod pueue;
 mod settings;
+mod tracing;
 mod web;
 
-use anyhow::Result;
-use log::info;
+use crate::{pueue::get_pueue_client, settings::Settings, web::run_web_server};
 
-use simplelog::{Config, LevelFilter, SimpleLogger};
+pub(crate) mod internal_prelude {
+    pub use color_eyre::{
+        eyre::{bail, eyre, WrapErr},
+        Result,
+    };
+    #[allow(unused)]
+    pub(crate) use tracing::{debug, error, info, trace, warn};
+}
 
-use crate::pueue::get_pueue_socket;
-use crate::settings::Settings;
-use crate::web::run_web_server;
+use crate::internal_prelude::*;
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    let _ = SimpleLogger::init(LevelFilter::Info, Config::default());
     let settings = Settings::new()?;
+    tracing::install_tracing(1)?;
 
     info!("Check once if a Pueue daemon is available");
-    get_pueue_socket(&settings).await?;
+    get_pueue_client(&settings).await?;
 
     info!("Init webserver");
     run_web_server(settings).await?;
