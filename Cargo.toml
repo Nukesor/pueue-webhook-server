@@ -25,9 +25,7 @@ dirs = "5"
 handlebars = "6"
 hex = "0.4"
 hmac = "0.12"
-pueue-lib = { version = "0.28", path = "../pueue/pueue_lib", features = [
-    "client",
-] }
+pueue-lib = { version = "0.28.1", features = ["client"] }
 rustls = "0.23"
 rustls-pemfile = "2"
 serde = { version = "1", features = ["derive"] }
