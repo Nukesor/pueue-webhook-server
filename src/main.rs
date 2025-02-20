@@ -7,8 +7,8 @@ use crate::{pueue::get_pueue_client, settings::Settings, web::run_web_server};
 
 pub(crate) mod internal_prelude {
     pub use color_eyre::{
-        eyre::{bail, eyre, WrapErr},
         Result,
+        eyre::{WrapErr, bail, eyre},
     };
     #[allow(unused)]
     pub(crate) use tracing::{debug, error, info, trace, warn};

@@ -2,9 +2,9 @@ use std::collections::HashMap;
 
 use actix_web::error::{Error, ErrorUnauthorized};
 use base64::{
-    alphabet,
-    engine::{general_purpose, GeneralPurpose},
     Engine,
+    alphabet,
+    engine::{GeneralPurpose, general_purpose},
 };
 use hmac::{Hmac, Mac};
 use sha1::Sha1;

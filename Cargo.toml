@@ -9,8 +9,7 @@ documentation = "https://docs.rs/webhook-server"
 license = "MIT"
 keywords = ["executor", "https", "script", "server", "webhook"]
 readme = "README.md"
-edition = "2021"
-rust-version = "1.78"
+edition = "2024"
 
 [[bin]]
 name = "webhookserver"

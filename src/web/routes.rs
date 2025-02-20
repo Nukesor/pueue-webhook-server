@@ -1,10 +1,10 @@
-use actix_web::{error::Error, http::Method, web, HttpRequest, HttpResponse};
+use actix_web::{HttpRequest, HttpResponse, error::Error, http::Method, web};
 use pueue_lib::Request;
 
 use crate::{
     internal_prelude::*,
     pueue::get_pueue_client,
-    web::{authentication::verify_authentication_header, helper::*, AppState, Payload},
+    web::{AppState, Payload, authentication::verify_authentication_header, helper::*},
 };
 
 // Index route for getting current state of the server
@@ -53,7 +53,7 @@ pub async fn webhook(
         Ok(client) => client,
         Err(err) => {
             return Ok(HttpResponse::InternalServerError()
-                .body(format!("Pueue daemon cannot be reached: {err:?}")))
+                .body(format!("Pueue daemon cannot be reached: {err:?}")));
         }
     };
 

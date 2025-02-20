@@ -1,9 +1,9 @@
 use std::{collections::HashMap, fs::File, io::BufReader, path::PathBuf};
 
-use actix_web::{web, App, HttpServer};
+use actix_web::{App, HttpServer, web};
 use rustls::{
-    pki_types::{CertificateDer, PrivateKeyDer},
     ServerConfig,
+    pki_types::{CertificateDer, PrivateKeyDer},
 };
 use rustls_pemfile::{pkcs8_private_keys, rsa_private_keys};
 use serde::Deserialize;
@@ -77,7 +77,6 @@ fn load_certs<'a>(path: PathBuf) -> Result<Vec<CertificateDer<'a>>> {
         .collect::<Result<Vec<_>, std::io::Error>>()
         .map_err(|err| eyre!("Failed to parse daemon certificate.: {err:?}"))?
         .into_iter()
-        .map(CertificateDer::from)
         .collect();
 
     Ok(certs)
