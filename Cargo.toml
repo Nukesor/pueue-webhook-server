@@ -20,7 +20,7 @@ path = "src/main.rs"
 actix-web = { version = "4", features = ["rustls-0_23"] }
 base64 = "0.22"
 color-eyre = "0.6.3"
-dirs = "5"
+dirs = "6"
 handlebars = "6"
 hex = "0.4"
 hmac = "0.12"

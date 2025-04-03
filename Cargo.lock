@@ -2469,7 +2469,7 @@ dependencies = [
  "actix-web",
  "base64",
  "color-eyre",
- "dirs 5.0.1",
+ "dirs 6.0.0",
  "handlebars",
  "hex",
  "hmac",
