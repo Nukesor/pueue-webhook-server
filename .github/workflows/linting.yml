@@ -25,6 +25,11 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: ${{ matrix.target }}
+
       - name: cargo fmt
         run: cargo fmt --all -- --check
 
