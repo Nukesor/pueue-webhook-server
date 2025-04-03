@@ -24,14 +24,16 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
+          components: clippy
+
+      - name: cargo clippy
+        run: cargo clippy --tests --workspace -- -D warnings
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: ${{ matrix.target }}
+          components: rustfmt
 
       - name: cargo fmt
         run: cargo +nightly fmt --all -- --check
-
-      - name: cargo clippy
-        run: cargo clippy --tests --workspace -- -D warnings
