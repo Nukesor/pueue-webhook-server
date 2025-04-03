@@ -5,7 +5,7 @@ use actix_web::{
     http::header::HeaderMap,
 };
 use handlebars::Handlebars;
-use pueue_lib::network::message::AddMessage;
+use pueue_lib::message::AddRequest;
 
 use crate::{internal_prelude::*, settings::Settings, web::Payload};
 
@@ -76,13 +76,13 @@ pub fn get_task_from_request(
     settings: &Settings,
     name: String,
     parameters: Option<HashMap<String, String>>,
-) -> Result<AddMessage, Error> {
+) -> Result<AddRequest, Error> {
     let parameters = parameters.unwrap_or_default();
 
     let webhook = settings.get_webhook_by_name(&name)?;
     let command = verify_template_parameters(webhook.command, &parameters)?;
 
-    Ok(AddMessage {
+    Ok(AddRequest {
         command,
         path: webhook.cwd,
         envs: std::env::vars().collect(),

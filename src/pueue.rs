@@ -1,4 +1,4 @@
-use pueue_lib::{network::message::GroupMessage, prelude::*};
+use pueue_lib::{Client, message::GroupRequest, prelude::*, secret::read_shared_secret};
 
 use crate::{internal_prelude::*, settings::Settings as InternalSettings};
 
@@ -6,8 +6,10 @@ pub async fn get_pueue_client(settings: &InternalSettings) -> Result<Client> {
     // Try to read settings from the default configuration file.
     let (pueue_settings, _) = Settings::read(&None)?;
 
+    let secret = read_shared_secret(&pueue_settings.shared.shared_secret_path())?;
+
     // Create client to talk with the daemon and connect.
-    let mut client = Client::new(pueue_settings, true)
+    let mut client = Client::new(pueue_settings.shared.try_into()?, &secret, true)
         .await
         .context("Failed to initialize client.")?;
 
@@ -21,7 +23,7 @@ pub async fn get_pueue_client(settings: &InternalSettings) -> Result<Client> {
         if !existing_groups.contains(&webhook.pueue_group) {
             info!("Create new pueue group {}", webhook.pueue_group);
 
-            let message = Request::Group(GroupMessage::Add {
+            let message = Request::Group(GroupRequest::Add {
                 name: webhook.pueue_group.clone(),
                 parallel_tasks: None,
             });
