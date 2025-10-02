@@ -92,10 +92,10 @@ fn load_key<'a>(path: PathBuf) -> Result<PrivateKeyDer<'a>> {
         .collect::<Result<Vec<_>, std::io::Error>>()
         .map_err(|_| eyre!("Failed to parse pkcs8 format."));
 
-    if let Ok(keys) = keys {
-        if let Some(key) = keys.into_iter().next() {
-            return Ok(PrivateKeyDer::Pkcs8(key));
-        }
+    if let Ok(keys) = keys
+        && let Some(key) = keys.into_iter().next()
+    {
+        return Ok(PrivateKeyDer::Pkcs8(key));
     }
 
     // Try the normal rsa format afterwards.
