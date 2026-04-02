@@ -25,9 +25,7 @@ handlebars = "6"
 hex = "0.4"
 hmac = "0.12"
 # pueue-lib = { version = "0.28.1", features = ["client"] }
-pueue-lib = { git = "https://github.com/Nukesor/pueue", version = "0.29", features = [
-    "client",
-] }
+pueue-lib = "0.31"
 rustls = "0.23"
 rustls-pemfile = "2"
 serde = { version = "1", features = ["derive"] }
@@ -36,7 +34,7 @@ serde_yaml = "0.9"
 sha-1 = "0.10"
 tracing = "0.1.44"
 tracing-error = "0.2.1"
-tracing-subscriber = { version = "0.3.22", features = [
+tracing-subscriber = { version = "0.3.23", features = [
     "chrono",
     "env-filter",
     "fmt",
