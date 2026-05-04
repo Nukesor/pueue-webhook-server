@@ -6,7 +6,7 @@ use base64::{
     alphabet,
     engine::{GeneralPurpose, general_purpose},
 };
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, KeyInit, Mac};
 use sha1::Sha1;
 
 use crate::{internal_prelude::*, settings::Settings};
