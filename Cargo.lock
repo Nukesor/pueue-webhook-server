@@ -2482,6 +2482,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "sha1",
+ "subtle",
  "tracing",
  "tracing-error",
  "tracing-subscriber",

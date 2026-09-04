@@ -8,6 +8,7 @@ use base64::{
 };
 use hmac::{Hmac, KeyInit, Mac};
 use sha1::Sha1;
+use subtle::ConstantTimeEq;
 
 use crate::{internal_prelude::*, settings::Settings};
 
@@ -187,7 +188,10 @@ fn verify_basic_auth_header(
         return Err(ErrorUnauthorized(""));
     };
 
-    if user != credentials[0] || password != credentials[1] {
+    // Compare in constant time and without short-circuiting to prevent timing attacks
+    let user_matches = user.as_bytes().ct_eq(credentials[0].as_bytes());
+    let password_matches = password.as_bytes().ct_eq(credentials[1].as_bytes());
+    if !bool::from(user_matches & password_matches) {
         warn!("Got invalid base64 credentials");
         return Err(ErrorUnauthorized(""));
     }
